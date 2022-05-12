@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task createJar{
+    jar {
+        manifest {
+            attributes(
+                    'Main-Class': 'task9.Example'
+            )
+        }
+    }
+}
+
+task copyJar{
+    dependsOn 'createJar'
+    copy{
+        from file("$buildDir/libs/Task9Gradle-1.0-SNAPSHOT.jar")
+        into file("$rootDir/src/main/java/jarAndDockerfile/")
+    }
+}
+
+task createImage{
+    dependsOn 'copyJar'
+    exec{
+        commandLine 'docker', 'build','./src/main/java/jarAndDockerfile/', '--tag', 'javaimage'
+    }
+}
+
+task runDocker{
+    dependsOn 'createImage'
+    exec{
+        commandLine 'docker', 'run', 'javaimage'
+    }
+}
